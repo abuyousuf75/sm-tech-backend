@@ -29,19 +29,22 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // for products brand
-   const allProductsCollections = client.db('brandsDB').collection('products')
-   const BProductsCollections = client.db('brandsDB').collection('pBrands')
-
+   const allProductsCollections = client.db('brandsDB').collection('products');
+   const BProductsCollections = client.db('brandsDB').collection('pBrands');
+  const userCollections = client.db('brandsDB').collection('user');
     // for READ or get
     
    
 
-    // for all products
+    // for all products and find spacapic product
     app.get('/products/:brand',async(req,res) =>{
-      const cursor = allProductsCollections.find()
+      const brand = req.params.brand;
+      const qurray = {brand : brand}
+      const cursor = allProductsCollections.find(qurray)
       const result = await cursor.toArray()
       res.send(result);
   })
+
 
     app.get('/pBrands',async(req,res) =>{
       const cursor =   BProductsCollections.find();
@@ -49,7 +52,12 @@ async function run() {
     res.send(result)
   })
 
-   
+   // gt users
+   app.get('/users', async(req,res)=>{
+      const cursor = userCollections.find();
+      const result = await cursor.toArray();
+      res.send(result)
+   })
 
    // for CRETE or post all 
 
@@ -64,7 +72,12 @@ async function run() {
   
    })
   
-   
+   // for users
+   app.post('/user',async(req,res) =>{
+    const allUsers = req.body;
+    const result = await userCollections.insertOne(allUsers);
+    res.send(result)
+   })
 
 
     // Send a ping to confirm a successful connection
