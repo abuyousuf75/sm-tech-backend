@@ -1,7 +1,7 @@
 const express = require('express');
-require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+require('dotenv').config();
 const cors = require('cors');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -29,44 +29,41 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // for products brand
-   const allBrandCollections = client.db('brandsDB').collection('brand')
-    // for products items
+   const allProductsCollections = client.db('brandsDB').collection('products')
+   const BProductsCollections = client.db('brandsDB').collection('pBrands')
 
-   //all read methods
-
-   // find one
-    // app.get('/brand', async (req,res) =>{
-    //    const cursor = allBrandCollections.find();
-    //    const result = await cursor.toArray();
-    //   res.send(result)
-    // })
-
-    // // find all
-    app.get('/brand/:brand', async (req, res) => {
-      const brand = req.params.brand;
-      const query = { brand: brand };
-      const result = await allBrandCollections.findOne(query);
-      res.send(result);
-    });
+    // for READ or get
     
+   
 
-
-
-    // all creat method
-    app.post('/brand',async(req,res) =>{
-      const newProducts = req.body;
-      const result = await allBrandCollections.insertOne(newProducts);
+    // for all products
+    app.get('/products/:brand',async(req,res) =>{
+      const cursor = allProductsCollections.find()
+      const result = await cursor.toArray()
       res.send(result);
-    })
+  })
 
-    
+    app.get('/pBrands',async(req,res) =>{
+      const cursor =   BProductsCollections.find();
+      const result = await cursor.toArray();
+    res.send(result)
+  })
 
+   
+
+   // for CRETE or post all 
+
+   // for brans 
+
+
+   // for all products details route
+   app.post('/products',async(req,res) =>{
+  const allProducts = req.body;
+  const result = await  allProductsCollections.insertOne(allProducts);
+  res.send(result)
   
-   
-
- 
-   
-
+   })
+  
    
 
 
