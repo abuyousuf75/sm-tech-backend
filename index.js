@@ -1,7 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -27,11 +27,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    
     // for products brand
    const allProductsCollections = client.db('brandsDB').collection('products');
    const BProductsCollections = client.db('brandsDB').collection('pBrands');
   const userCollections = client.db('brandsDB').collection('user');
+  const cartCollections = client.db('brandsDB').collection('cart');
     // for READ or get
     
    
@@ -39,11 +40,80 @@ async function run() {
     // for all products and find spacapic product
     app.get('/products/:brand',async(req,res) =>{
       const brand = req.params.brand;
-      const qurray = {brand : brand}
-      const cursor = allProductsCollections.find(qurray)
+      const query = {brand : brand } 
+      const cursor = allProductsCollections.find(query)
       const result = await cursor.toArray()
       res.send(result);
   })
+
+  
+   
+   
+
+
+  app.get('/products/:brand/:id', async(req,res) =>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)};
+      const result = await allProductsCollections.findOne(query);
+      res.send(result)
+  })
+   
+ 
+   
+ 
+  app.get('/details',async(req,res) =>{
+      const curosr = allProductsCollections.find();
+      const products = await curosr.toArray();
+      res.send(products)
+  })
+
+  app.get('/myCart/:email',async(req,res) =>{
+      const email = req.params.email;
+      const curosr = cartCollections.find({email});
+      const cartItems= await curosr.toArray();
+      res.send(cartItems)
+  })
+
+  app.delete('/myCart/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)};
+      const result = await cartCollections.deleteOne(query);
+      res.send(result)
+  })
+
+
+//   app.get('/details/:id', async(req,res) =>{
+//     const id = req.params.id;
+//     const query = {_id : new ObjectId(id)};
+//     const result = await allProductsCollections.findOne(query);
+//     res.send(result)
+// })
+
+
+  //for update products
+
+  app.put('/products/:brand/:id', async(req,res) =>{
+    const id = req.params.id;
+    const filter = {_id : new ObjectId(id)};
+    const options = {upsert: true};
+    const updateProducts = req.body;
+    const update = {
+      $set : {
+        name:updateProducts.name, 
+        ratting:updateProducts.ratting, 
+        brand:updateProducts.brand, 
+        price:updateProducts.price, 
+        category:updateProducts.category, 
+        details:updateProducts. details,
+        photo : updateProducts.photo
+      }
+
+    }
+    const result = await allProductsCollections.updateOne(filter,update, options)
+    res.send(result)
+  })
+
+
 
 
     app.get('/pBrands',async(req,res) =>{
@@ -71,6 +141,17 @@ async function run() {
   res.send(result)
   
    })
+
+  // for cart
+
+  app.post('/myCart', async (req,res) => {
+    const cartItems = req.body;
+    cartItems.productId = cartItems._id;
+    delete cartItems._id;
+    const result = await cartCollections.insertOne(cartItems);
+    res.send(result)
+  })
+ 
   
    // for users
    app.post('/user',async(req,res) =>{
